@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Streaming App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .upload-section {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .video-section {
+            margin: 20px 0;
+            text-align: center;
+        }
+        video {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Video Streaming App</h1>
+
+    <div class="upload-section">
+        <h2>Upload Video</h2>
+        <input type="file" id="videoFile" accept="video/*">
+        <button id="uploadBtn">Upload</button>
+        <p id="uploadMessage"></p>
+    </div>
+
+    <div class="video-section">
+        <h2>Stream Video</h2>
+        <input type="text" id="videoName" placeholder="Enter video filename">
+        <button id="streamBtn">Stream Video</button>
+        <br>
+        <video id="videoPlayer" controls></video>
+        <p id="streamMessage"></p>
+    </div>
+
+    <script>
+        // Upload video
+        document.getElementById('uploadBtn').addEventListener('click', async () => {
+            const fileInput = document.getElementById('videoFile');
+            const uploadMessage = document.getElementById('uploadMessage');
+
+            if (!fileInput.files.length) {
+                uploadMessage.textContent = 'Please select a video file to upload.';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    uploadMessage.textContent = `File uploaded successfully: ${data.filename}`;
+                } else {
+                    uploadMessage.textContent = `Error: ${data.error}`;
+                }
+            } catch (error) {
+                uploadMessage.textContent = 'Upload failed. Please try again.';
+                console.error('Error during upload:', error);
+            }
+        });
+
+        // Stream video
+        document.getElementById('streamBtn').addEventListener('click', async () => {
+            const videoName = document.getElementById('videoName').value;
+            const videoPlayer = document.getElementById('videoPlayer');
+            const streamMessage = document.getElementById('streamMessage');
+
+            if (!videoName) {
+                streamMessage.textContent = 'Please enter a video filename.';
+                return;
+            }
+
+            try {
+                videoPlayer.src = `/stream/${videoName}`;
+                streamMessage.textContent = 'Loading video...';
+                await videoPlayer.play();
+                streamMessage.textContent = '';
+            } catch (error) {
+                streamMessage.textContent = 'Failed to load video.';
+                console.error('Error during video streaming:', error);
+            }
+        });
+    </script>
+</body>
+</html>
